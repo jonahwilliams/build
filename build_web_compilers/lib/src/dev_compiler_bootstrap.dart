@@ -21,12 +21,12 @@ _p.Context get _context => _p.url;
 var _modulePartialExtension = _context.withoutExtension(jsModuleExtension);
 
 Future<Null> bootstrapDdc(BuildStep buildStep,
-    {bool useKernel, bool buildRootAppSummary}) async {
+    {bool useKernel, bool buildRootAppSummary, String compiledSdk, bool flutterWeb}) async {
   buildRootAppSummary ??= false;
   useKernel ??= false;
   var dartEntrypointId = buildStep.inputId;
   var moduleId =
-      buildStep.inputId.changeExtension(moduleExtension(DartPlatform.dartdevc));
+      buildStep.inputId.changeExtension(moduleExtension(flutterWeb ? DartPlatform.flutter_dartdevc : DartPlatform.dartdevc));
   var module = Module.fromJson(json
       .decode(await buildStep.readAsString(moduleId)) as Map<String, dynamic>);
 
@@ -63,8 +63,8 @@ Future<Null> bootstrapDdc(BuildStep buildStep,
   }());
 
   // Map from module name to module path for custom modules.
-  var modulePaths =
-      SplayTreeMap.of({'dart_sdk': r'packages/$sdk/dev_compiler/amd/dart_sdk'});
+  var modulePaths = SplayTreeMap.of(
+      {'dart_sdk': compiledSdk ?? r'packages/$sdk/dev_compiler/amd/dart_sdk'});
   var transitiveJsModules = [jsId]
     ..addAll(transitiveDeps.map((dep) => dep.jsId(jsModuleExtension)));
   for (var jsId in transitiveJsModules) {

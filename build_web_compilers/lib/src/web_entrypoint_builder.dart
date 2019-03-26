@@ -49,12 +49,16 @@ const _deprecatedOptions = [
 class WebEntrypointBuilder implements Builder {
   final WebCompiler webCompiler;
   final List<String> dart2JsArgs;
+  final String compiledSdk;
   final bool buildRootAppSummary;
   final bool useKernel;
+  final bool flutterWeb;
 
   const WebEntrypointBuilder(this.webCompiler,
       {this.dart2JsArgs = const [],
       this.useKernel = false,
+      this.compiledSdk,
+      this.flutterWeb = false,
       this.buildRootAppSummary = false});
 
   factory WebEntrypointBuilder.fromOptions(BuilderOptions options) {
@@ -108,7 +112,7 @@ class WebEntrypointBuilder implements Builder {
     if (webCompiler == WebCompiler.DartDevc) {
       try {
         await bootstrapDdc(buildStep,
-            useKernel: useKernel, buildRootAppSummary: buildRootAppSummary);
+            useKernel: useKernel, buildRootAppSummary: buildRootAppSummary, compiledSdk: compiledSdk, flutterWeb: flutterWeb);
       } on MissingModulesException catch (e) {
         log.severe('$e');
       }

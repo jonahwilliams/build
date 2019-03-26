@@ -26,11 +26,23 @@ const jsSourceMapExtension = '.ddc.js.map';
 class DevCompilerBuilder implements Builder {
   final bool useKernel;
 
-  DevCompilerBuilder({bool useKernel}) : useKernel = useKernel ?? false;
+  /// The sdk kernel file or analyzer summary for the current platform.
+  final String sdkKernelPath;
+
+  /// The root directory of the platform's dart SDK.
+  ///
+  /// If not provided, defaults to the directory of
+  /// [Platform.resolvedExecutable].
+  ///
+  /// On flutter this is the path to the root of the flutter_web_sdk.
+  final String platformSdk;
+
+  DevCompilerBuilder({bool useKernel, this.sdkKernelPath, this.platformSdk})
+      : useKernel = useKernel ?? false;
 
   @override
   final buildExtensions = {
-    moduleExtension(DartPlatform.dartdevc): [
+    moduleExtension(DartPlatform.flutter_dartdevc): [
       jsModuleExtension,
       jsModuleErrorsExtension,
       jsSourceMapExtension
@@ -50,7 +62,8 @@ class DevCompilerBuilder implements Builder {
     }
 
     try {
-      await _createDevCompilerModule(module, buildStep, useKernel);
+      await _createDevCompilerModule(
+          module, buildStep, useKernel, platformSdk ?? _sdkDir, sdkKernelPath);
     } on DartDevcCompilationException catch (e) {
       await handleError(e);
     } on MissingModulesException catch (e) {
@@ -60,8 +73,8 @@ class DevCompilerBuilder implements Builder {
 }
 
 /// Compile [module] with the dev compiler.
-Future _createDevCompilerModule(
-    Module module, BuildStep buildStep, bool useKernel,
+Future _createDevCompilerModule(Module module, BuildStep buildStep,
+    bool useKernel, String sdkDir, String sdkKernelPath,
     {bool debugMode = true}) async {
   var transitiveDeps = await buildStep.trackStage('CollectTransitiveDeps',
       () => module.computeTransitiveDependencies(buildStep));
@@ -77,8 +90,9 @@ Future _createDevCompilerModule(
       'EnsureAssets', () => scratchSpace.ensureAssets(allAssetIds, buildStep));
   var jsId = module.jsId(jsModuleExtension);
   var jsOutputFile = scratchSpace.fileFor(jsId);
-  var sdkSummary = p.url
-      .join(_sdkDir, 'lib/_internal/ddc_sdk.${useKernel ? 'dill' : 'sum'}');
+  var defaultSummaryPath =
+      'lib/_internal/ddc_sdk.${useKernel ? 'dill' : 'sum'}';
+  var sdkSummary = p.url.join(sdkDir, sdkKernelPath ?? defaultSummaryPath);
   var request = WorkRequest();
 
   request.arguments.addAll([
@@ -90,16 +104,16 @@ Future _createDevCompilerModule(
 
   if (!useKernel) {
     // Add the default analysis_options.
-    await scratchSpace.ensureAssets([defaultAnalysisOptionsId], buildStep);
+    // await scratchSpace.ensureAssets([defaultAnalysisOptionsId], buildStep);
     var libraryRoot = '/${p.split(p.dirname(jsId.path)).first}';
     var summaryExtension =
-        linkedSummaryExtension(DartPlatform.dartdevc).substring(1);
+        linkedSummaryExtension(DartPlatform.flutter_dartdevc).substring(1);
     request.arguments.addAll([
       '--module-root=.',
       '--library-root=$libraryRoot',
       '--summary-extension=$summaryExtension',
       '--no-summarize',
-      defaultAnalysisOptionsArg(scratchSpace),
+      // defaultAnalysisOptionsArg(scratchSpace),
     ]);
   }
 

@@ -72,6 +72,45 @@ class DartPlatform {
     'ui',
     'vmservice_io',
   ]);
+  static const flutter_dartdevc =  DartPlatform._('flutter_dartdevc', [
+    'async',
+    'collection',
+    'convert',
+    'core',
+    'developer',
+    'html',
+    'html_common',
+    'indexed_db',
+    'js',
+    'js_util',
+    'math',
+    'svg',
+    'typed_data',
+    'web_audio',
+    'web_gl',
+    'web_sql',
+    'ui',
+  ]);
+  static const flutter_dart2js =  DartPlatform._('flutter_dart2js', [
+    'async',
+    'collection',
+    'convert',
+    'core',
+    'developer',
+    'html',
+    'html_common',
+    'indexed_db',
+    'js',
+    'js_util',
+    'math',
+    'svg',
+    'typed_data',
+    'web_audio',
+    'web_gl',
+    'web_sql',
+    'ui',
+    'io',
+  ]);
   static const vm = DartPlatform._('vm', [
     'async',
     'cli',
@@ -103,6 +142,8 @@ class DartPlatform {
     'dart2js_server': dart2jsServer,
     'dartdevc': dartdevc,
     'flutter': flutter,
+    'flutter_dartdevc': flutter_dartdevc,
+    'flutter_dart2js': flutter_dart2js,
     'vm': vm
   };
 
